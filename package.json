@@ -1,0 +1,20 @@
+{
+  "name": "testcontainers-presentation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev slides.md --open",
+    "build": "slidev build slides.md",
+    "export": "slidev export slides.md"
+  },
+  "dependencies": {
+    "slidev-theme-dracula": "^0.2.0"
+  },
+  "devDependencies": {
+    "@iconify-json/logos": "^1.2.3",
+    "@iconify-json/simple-icons": "^1.2.11",
+    "@oxc-parser/binding-darwin-arm64": "^0.121.0",
+    "@slidev/cli": "^51.1.0"
+  }
+}
