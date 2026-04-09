@@ -1,0 +1,243 @@
+/*
+ * Sakura Night — Anime Oriental Landscape palette
+ *
+ * Inspired by: moonlit lake, cherry blossoms, indigo mountains
+ */
+
+:root {
+  /* Core palette */
+  --sn-deep-indigo: #0b1026;
+  --sn-night-blue: #141a3e;
+  --sn-foreground: #f0e8f5;
+  --sn-muted: #8b9cc6;
+
+  /* Accents */
+  --sn-sakura: #e87ea1;
+  --sn-sakura-light: #f5a4be;
+  --sn-moonlight: #c9b8e8;
+  --sn-purple: #9b7ecf;
+  --sn-lake-blue: #5588cc;
+  --sn-cyan: #7ec8e8;
+  --sn-amber: #d4a86a;
+  --sn-green: #7ecfa0;
+  --sn-red: #e87e7e;
+
+  /* Functional mappings */
+  --background: var(--sn-deep-indigo);
+  --foreground: var(--sn-foreground);
+  --current-line: var(--sn-night-blue);
+  --comment: var(--sn-muted);
+}
+
+/* ── Base slide styling ── */
+#app {
+  #slide-content {
+    --at-apply: text-$foreground bg-$background !important;
+
+    h1, h2, h3, h4, h5, h6 {
+      --at-apply: text-$sn-sakura;
+    }
+
+    strong {
+      --at-apply: text-$sn-amber;
+    }
+
+    em {
+      --at-apply: text-$sn-moonlight;
+    }
+
+    a {
+      --at-apply: text-$sn-cyan;
+      text-decoration: underline;
+      text-decoration-color: rgba(126, 200, 232, 0.3);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.2s;
+    }
+
+    a:hover {
+      text-decoration-color: rgba(126, 200, 232, 0.8);
+    }
+
+    ul, ol {
+      li::marker {
+        --at-apply: text-$sn-sakura-light;
+      }
+    }
+
+    blockquote {
+      --at-apply: text-$sn-moonlight border-l-3 border-$sn-purple pl-4;
+      background: rgba(155, 126, 207, 0.08);
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+    }
+
+    kbd {
+      --at-apply: text-$sn-green;
+    }
+
+    code:not(pre code) {
+      --at-apply: text-$sn-green;
+      background: rgba(126, 207, 160, 0.08);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* Code blocks */
+    .slidev-code.shiki {
+      background: #080c1a !important;
+      border: 1px solid rgba(85, 136, 204, 0.15);
+      border-radius: 8px;
+    }
+
+    /* Tables */
+    table {
+      th {
+        --at-apply: text-$sn-sakura;
+        background: rgba(232, 126, 161, 0.08);
+        border-bottom: 2px solid rgba(232, 126, 161, 0.3);
+      }
+
+      td {
+        border-bottom: 1px solid rgba(139, 156, 198, 0.15);
+      }
+
+      tr:hover td {
+        background: rgba(85, 136, 204, 0.05);
+      }
+    }
+
+    /* Mermaid diagrams */
+    .mermaid {
+      --vp-c-brand: var(--sn-sakura);
+      --vp-c-brand-light: var(--sn-sakura-light);
+    }
+  }
+
+  /* ── Layout: Intro ── */
+  .slidev-layout.intro {
+    --at-apply: h-full grid;
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(155, 126, 207, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 80%, rgba(85, 136, 204, 0.1) 0%, transparent 50%),
+      var(--sn-deep-indigo);
+
+    h1 {
+      --at-apply: text-6xl leading-20;
+      background: linear-gradient(135deg, var(--sn-sakura), var(--sn-moonlight));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h1 + p {
+      --at-apply: -mt-2 text-$sn-muted mb-4;
+    }
+  }
+
+  /* ── Layout: Cover ── */
+  .slidev-layout.cover {
+    --at-apply: h-full grid;
+
+    h1 {
+      --at-apply: text-6xl leading-20;
+      background: linear-gradient(135deg, var(--sn-sakura), var(--sn-moonlight));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h1 + p {
+      --at-apply: -mt-2 text-$sn-muted mb-4;
+    }
+  }
+
+  /* ── Layout: Section ── */
+  .slidev-layout.section {
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(232, 126, 161, 0.08) 0%, transparent 60%),
+      var(--sn-deep-indigo);
+
+    h1 {
+      --at-apply: text-6xl font-500 leading-20;
+      background: linear-gradient(135deg, var(--sn-sakura-light), var(--sn-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+
+  /* ── Layout: Fact ── */
+  .slidev-layout.fact {
+    --at-apply: text-center grid h-full;
+
+    h1 {
+      --at-apply: text-8xl font-700;
+      background: linear-gradient(135deg, var(--sn-sakura), var(--sn-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h1 + p {
+      --at-apply: font-700 text-2xl text-$sn-moonlight;
+    }
+  }
+
+  /* ── Layout: Statement ── */
+  .slidev-layout.statement {
+    --at-apply: text-center grid h-full;
+
+    h1 {
+      --at-apply: text-6xl font-700;
+    }
+  }
+
+  /* ── Layout: Quote ── */
+  .slidev-layout.quote {
+    --at-apply: grid h-full;
+
+    h1 + p {
+      --at-apply: mt-2;
+    }
+  }
+}
+
+/* ── Slide transitions — soft fade ── */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* ── Navigation & progress bar ── */
+:root {
+  --slidev-theme-primary: #e87ea1;
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sn-deep-indigo);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sn-night-blue);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sn-purple);
+}

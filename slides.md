@@ -1,5 +1,5 @@
 ---
-theme: dracula
+theme: ./theme
 title: Introduction to Testcontainers
 layout: intro
 hideInToc: true
@@ -52,6 +52,7 @@ layout: section
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # What is Testcontainers?
@@ -89,10 +90,11 @@ So what is Testcontainers? In short, it's a library that lets you spin up real s
 layout: section
 ---
 
-# The Problem with Mocking
+# Mocking vs Real Services
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # The Traditional Approach
@@ -118,6 +120,7 @@ Let's talk about what most of us do today when we need to test code that talks t
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Where Mocking Falls Short
@@ -158,13 +161,8 @@ Here's where things get tricky. Mocks don't evolve with the real service. If som
 -->
 
 ---
-layout: section
----
-
-# Benefits of Testcontainers
-
----
 layout: default
+hideInToc: true
 ---
 
 # Why Testcontainers?
@@ -187,6 +185,7 @@ Let's compare the two approaches side by side. The big wins for Testcontainers a
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Key Benefits
@@ -230,6 +229,7 @@ layout: section
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Testcontainers Lifecycle
@@ -255,6 +255,7 @@ Here's the lifecycle. Your test asks Testcontainers for a container — say Post
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Architecture
@@ -280,12 +281,6 @@ flowchart TB
 <!--
 From an architecture perspective, your test code talks to the Testcontainers library, which manages containers through the Docker API. You can have multiple containers running at once — a database, a message broker, a cache — whatever your application needs. And notice Ryuk in the corner there. It's a special cleanup container that Testcontainers starts automatically. It keeps track of all containers created during the session and ensures they're cleaned up, even if your test process gets killed or crashes unexpectedly. It's a safety net that prevents Docker from filling up with orphaned containers.
 -->
-
----
-layout: section
----
-
-# Code Examples
 
 ---
 layout: default
@@ -409,6 +404,7 @@ layout: section
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Tips for Real-World Usage
@@ -449,6 +445,7 @@ A few tips from real-world experience. First, make your containers static and re
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Getting Started
@@ -485,6 +482,7 @@ Getting started is straightforward. Add the Testcontainers BOM and the module yo
 
 ---
 layout: default
+hideInToc: true
 ---
 
 # Thank You!
