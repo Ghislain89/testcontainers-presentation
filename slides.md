@@ -347,7 +347,7 @@ The @InjectMock annotation is also fundamentally different from @MockBean. In Sp
 
 And then there's quarkus:dev — this is the killer feature for developer experience. You run mvn quarkus:dev once, and Quarkus starts your app with containers. As you edit code and save, it detects the changes, hot-reloads only what changed, and re-runs only the affected tests. The containers stay running. Your test feedback loop drops to under 2 seconds. There is nothing equivalent in Spring Boot — Spring DevTools does hot-reload but doesn't re-run tests, and you still pay the full context load time.
 
-Look at the comparison table at the bottom. Every row is a win for Quarkus when it comes to test speed. This is where Testcontainers goes from "slightly slower than mocks" to "as fast as you'd ever need for day-to-day development."
+Look at the bullet points on the right. Every line is a win for Quarkus when it comes to test speed. This is where Testcontainers goes from "slightly slower than mocks" to "as fast as you'd ever need for day-to-day development."
 -->
 
 ---
@@ -432,7 +432,6 @@ flowchart LR
     subgraph Test Infrastructure
         B -.->|Dev Services| E[🐳 Testcontainers]
         C -.->|Dev Services| E
-        D -.->|WireMock| F[🔌 Mock Server]
     end
 ```
 
@@ -632,7 +631,7 @@ layout: default
 hideInToc: true
 ---
 
-# Results — 7 Tests, 2 Levels, Real Confidence
+# Results — 10 Tests, 2 Levels, Real Confidence
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div>
@@ -649,7 +648,7 @@ hideInToc: true
 
 - ⚡ Mock what you isolate, real DB is free
 - 🎯 Zero config via Dev Services
-- 🏗️ BDD + WireMock + Kafka = full confidence
+- 🏗️ Real containers = real confidence
 - 🧹 All cleanup is automatic (Ryuk)
 - 🔄 Reproducible on any machine with Docker
 
@@ -663,7 +662,7 @@ hideInToc: true
 </div>
 
 <!--
-Let me show you the final results. We have 10 tests across 3 test classes covering 3 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. And the component tests combine everything: real database, real Kafka, and WireMock for external APIs with BDD-style steps. All 10 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
+Let me show you the final results. We have 10 tests across 2 test classes covering 2 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. All 10 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
 -->
 
 ---
