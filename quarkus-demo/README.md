@@ -44,6 +44,15 @@ Demonstrates manual container management via `QuarkusTestProfile` when you need 
 
 # Run all tests
 ./mvnw test
+
+# Run a specific test level
+./mvnw test -Dtest=FruitResourceUnitTest          # Unit tests only
+./mvnw test -Dtest=FruitResourceTest               # Integration tests only
+./mvnw test -Dtest=FruitComponentTest              # Component tests only
+./mvnw test -Dtest=FruitResourceExplicitContainerTest  # Explicit container test
+
+# Continuous testing (re-runs on save)
+./mvnw quarkus:dev    # then press 'r' in the terminal
 ```
 
 ## API
