@@ -1,0 +1,27 @@
+{
+  "name": "slidev-theme-sakura-night",
+  "version": "1.0.0",
+  "description": "Anime oriental landscape theme for Slidev — deep indigo, cherry blossoms, moonlit lake",
+  "author": "Ghislain Gabriëlse",
+  "keywords": [
+    "slidev-theme",
+    "slidev",
+    "sakura",
+    "dark theme",
+    "theme"
+  ],
+  "license": "MIT",
+  "engines": {
+    "slidev": ">=0.48.0"
+  },
+  "slidev": {
+    "colorSchema": "dark",
+    "defaults": {
+      "fonts": {
+        "sans": "Noto Sans JP",
+        "mono": "JetBrains Mono"
+      },
+      "highlighter": "shiki"
+    }
+  }
+}
