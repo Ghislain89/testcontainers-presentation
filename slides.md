@@ -741,7 +741,8 @@ Questions? 🙋
 
 📚 [testcontainers.com](https://testcontainers.com) — Official documentation  
 💻 [github.com/testcontainers](https://github.com/testcontainers) — Source code & examples  
-🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules
+🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules  
+🎤 [github.com/Ghislain89/testcontainers-presentation](https://github.com/Ghislain89/testcontainers-presentation) — This presentation
 
 </div>
 
