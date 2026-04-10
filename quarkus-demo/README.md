@@ -1,6 +1,6 @@
 # Quarkus + Testcontainers Demo
 
-A small Quarkus CRUD service demonstrating two ways to use **Testcontainers** for integration testing with a real PostgreSQL database.
+A Quarkus CRUD service demonstrating **three levels of testing** with Testcontainers, Kafka, WireMock, and BDD-style component tests.
 
 ## What's Inside
 
@@ -8,35 +8,28 @@ A small Quarkus CRUD service demonstrating two ways to use **Testcontainers** fo
 |------|---------|
 | `Fruit.java` | JPA entity using Panache (active record pattern) |
 | `FruitResource.java` | REST endpoint (`/fruits`) with CRUD operations |
-| `FruitResourceTest.java` | Tests using **Dev Services** — Quarkus auto-starts PostgreSQL via Testcontainers |
-| `FruitResourceExplicitContainerTest.java` | Tests using **explicit Testcontainers** — manually managed container with custom config |
+| `FruitEventProducer.java` | Publishes domain events to Kafka |
+| `NutritionClient.java` | REST client calling external nutrition API |
+| `V1__create_fruit_table.sql` | Flyway migration — creates the fruit table |
+| `V2__seed_fruits.sql` | Flyway migration — seeds Apple, Banana, Cherry |
 
-## Two Testcontainers Approaches
+## Three Test Levels
 
-### 1. Dev Services (implicit — zero config)
+### Level 1 — Unit Tests (`FruitResourceUnitTest`)
 
-Quarkus detects the PostgreSQL JDBC driver and **automatically starts a container** during `dev` and `test` — powered by Testcontainers under the hood. No datasource URL needed!
+Uses `@InjectMock` to mock Kafka and the REST client while keeping a real database via Dev Services.
 
-```java
-@QuarkusTest  // That's it — PostgreSQL is running!
-class FruitResourceTest { ... }
-```
+### Level 2 — Integration Tests (`FruitResourceTest`)
 
-### 2. Explicit Testcontainers (full control)
+Zero-config — `@QuarkusTest` with Dev Services auto-starts PostgreSQL and Kafka. No mocks.
 
-Manually create and configure a `PostgreSQLContainer`, then wire it into Quarkus via a test profile. Useful when you need a specific version or custom setup.
+### Level 3 — Component Tests (`FruitComponentTest`)
 
-```java
-static final PostgreSQLContainer<?> POSTGRES =
-    new PostgreSQLContainer<>("postgres:16-alpine");
+Full BDD-style tests with WireMock for external APIs, real Kafka for event assertions, and real PostgreSQL. Uses shared test infrastructure from `testsupport/`.
 
-public static class PostgresProfile implements QuarkusTestProfile {
-    @Override
-    public Map<String, String> getConfigOverrides() {
-        return Map.of("quarkus.datasource.jdbc.url", POSTGRES.getJdbcUrl(), ...);
-    }
-}
-```
+### Explicit Testcontainers (`FruitResourceExplicitContainerTest`)
+
+Demonstrates manual container management via `QuarkusTestProfile` when you need full control.
 
 ## Prerequisites
 
@@ -46,19 +39,29 @@ public static class PostgresProfile implements QuarkusTestProfile {
 ## Run
 
 ```bash
-# Dev mode (auto-starts PostgreSQL container)
+# Dev mode (auto-starts PostgreSQL + Kafka containers)
 ./mvnw quarkus:dev
 
-# Run tests (both approaches)
+# Run all tests
 ./mvnw test
+
+# Run a specific test level
+./mvnw test -Dtest=FruitResourceUnitTest          # Unit tests only
+./mvnw test -Dtest=FruitResourceTest               # Integration tests only
+./mvnw test -Dtest=FruitComponentTest              # Component tests only
+./mvnw test -Dtest=FruitResourceExplicitContainerTest  # Explicit container test
+
+# Continuous testing (re-runs on save)
+./mvnw quarkus:dev    # then press 'r' in the terminal
 ```
 
 ## API
 
 ```bash
-curl http://localhost:8080/fruits            # List all
+curl http://localhost:8080/fruits              # List all
+curl http://localhost:8080/fruits/1/details     # Get with nutrition info
 curl -X POST http://localhost:8080/fruits \
   -H 'Content-Type: application/json' \
-  -d '{"name":"Mango","description":"Tropical"}' # Create
+  -d '{"name":"Mango","description":"Tropical"}'  # Create
 curl -X DELETE http://localhost:8080/fruits/1   # Delete
 ```

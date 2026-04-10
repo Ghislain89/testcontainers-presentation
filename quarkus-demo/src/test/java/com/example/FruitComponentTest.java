@@ -107,6 +107,34 @@ class FruitComponentTest extends AbstractComponentTest {
         });
     }
 
+    /**
+     * A unit test with a mocked NutritionClient would never test this — the mock
+     * always returns a happy response. Only with WireMock can we verify how the
+     * app behaves when the external API is down.
+     */
+    @ComponentTest
+    void shouldHandleExternalApiFailure() {
+        TestCase.given("the external nutrition API returns a 500 error", () -> {
+            RestMock.stubFor(
+                    RestMock.get("/api/nutrition/apple"),
+                    WireMock.aResponse()
+                            .withStatus(500)
+                            .withBody("Internal Server Error")
+            );
+        });
+
+        TestCase.when("we request details for the seeded Apple fruit", () -> {
+            given()
+                    .when().get("/fruits/1/details")
+                    .then()
+                    .statusCode(500);
+        });
+
+        TestCase.then("the external API was called", () -> {
+            RestMock.verify(1, RestMock.get("/api/nutrition/apple"));
+        });
+    }
+
     @ComponentTest
     void deleteFruitAndVerifyKafkaEvent() {
         var fruitId = new int[]{ 0 };
