@@ -347,7 +347,7 @@ The @InjectMock annotation is also fundamentally different from @MockBean. In Sp
 
 And then there's quarkus:dev — this is the killer feature for developer experience. You run mvn quarkus:dev once, and Quarkus starts your app with containers. As you edit code and save, it detects the changes, hot-reloads only what changed, and re-runs only the affected tests. The containers stay running. Your test feedback loop drops to under 2 seconds. There is nothing equivalent in Spring Boot — Spring DevTools does hot-reload but doesn't re-run tests, and you still pay the full context load time.
 
-Look at the comparison table at the bottom. Every row is a win for Quarkus when it comes to test speed. This is where Testcontainers goes from "slightly slower than mocks" to "as fast as you'd ever need for day-to-day development."
+Look at the bullet points on the right. Every line is a win for Quarkus when it comes to test speed. This is where Testcontainers goes from "slightly slower than mocks" to "as fast as you'd ever need for day-to-day development."
 -->
 
 ---
@@ -420,7 +420,7 @@ hideInToc: true
 
 # The Demo Application
 
-A simple **Fruit CRUD API** built with Quarkus, demonstrating three test levels.
+A simple **Fruit CRUD API** built with Quarkus, demonstrating two test levels.
 
 ```mermaid
 flowchart LR
@@ -432,7 +432,6 @@ flowchart LR
     subgraph Test Infrastructure
         B -.->|Dev Services| E[🐳 Testcontainers]
         C -.->|Dev Services| E
-        D -.->|WireMock| F[🔌 Mock Server]
     end
 ```
 
@@ -455,7 +454,7 @@ flowchart LR
 </div>
 
 <!--
-Let's move from theory to practice. I've built a demo application — a simple Fruit CRUD API in Quarkus — that demonstrates three different levels of testing with Testcontainers. The app has three external dependencies: PostgreSQL for persistence, Kafka for domain events, and a REST client calling an external nutrition API. This gives us a realistic service to test at different levels.
+Let's move from theory to practice. I've built a demo application — a simple Fruit CRUD API in Quarkus — that demonstrates two different levels of testing with Testcontainers. The app has three external dependencies: PostgreSQL for persistence, Kafka for domain events, and a REST client calling an external nutrition API. This gives us a realistic service to test at different levels.
 -->
 
 ---
@@ -500,9 +499,9 @@ layout: default
 hideInToc: true
 ---
 
-# The Testing Pyramid — Three Levels
+# The Testing Pyramid — Two Levels
 
-<div class="grid grid-cols-3 gap-6 mt-6">
+<div class="grid grid-cols-2 gap-8 mt-6">
 <div class="border rounded p-4 bg-green-900/20 border-green-500/40">
 
 ### 🏎️ Unit Test
@@ -527,22 +526,10 @@ hideInToc: true
 - 🎯 Full stack validation
 
 </div>
-<div class="border rounded p-4 bg-purple-900/20 border-purple-500/40">
-
-### 🧩 Component Test
-
-**WireMock** + **Kafka** + **BDD**
-
-- External APIs → WireMock
-- Kafka events → asserted
-- Database → real (PostgreSQL)
-- 🏗️ End-to-end confidence
-
-</div>
 </div>
 
 <!--
-In our demo app, we test at three distinct levels. At the bottom, unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any external API calls. And at the top, component tests bring in WireMock for external APIs and use BDD-style given/when/then steps — this is the pattern from quarkus-core. Each level catches different types of bugs.
+In our demo app, we test at two distinct levels. Unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any mocks. Each level catches different types of bugs, and the combination gives you high confidence with fast feedback.
 -->
 
 ---
@@ -644,160 +631,7 @@ layout: default
 hideInToc: true
 ---
 
-# Level 3 — Shared Test Infrastructure
-
-In a large project, every service needs the same test setup. Extract it:
-
-```mermaid
-flowchart TB
-    subgraph "quarkus-core (shared library)"
-        A[🔌 WireMock Lifecycle Manager]
-        B[📨 Kafka Test Resources]
-        C[🧪 BDD TestCase Utility]
-        D[⚙️ RestAssured Config]
-    end
-    subgraph "Services"
-        E[credit-service] -->|depends on| A & B & C & D
-        F[order-service] -->|depends on| A & B & C & D
-        G[fruit-demo] -->|depends on| A & B & C & D
-    end
-```
-
-> 💡 The `WireMockLifecycleManager` implements `QuarkusTestResourceLifecycleManager` — it auto-starts WireMock on a dynamic port and rewires REST client URLs via config overrides.
-
-<!--
-When you have dozens of microservices that all need PostgreSQL, Kafka, and WireMock in their tests, you don't want to copy-paste the same setup into each one. We extracted this into a shared library called quarkus-core. It provides reusable test resources: a WireMock lifecycle manager that auto-starts WireMock and rewires REST client config, Kafka test utilities, BDD scaffolding, and RestAssured configuration. Every service just depends on this library and gets consistent, well-maintained test infrastructure out of the box.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# BDD Component Test — Full Stack
-
-```java {all|1-7|9-13|15-22|24-30}{maxHeight:'420px'}
-@QuarkusTest
-@QuarkusTestResource(WireMockLifecycleManager.class)
-@QuarkusTestResource(KafkaMessagingResource.class)
-class FruitComponentTest extends AbstractComponentTest {
-
-    @InjectKafkaMessageConsumer
-    KafkaMessageConsumer kafkaConsumer;
-
-    @ComponentTest
-    void createFruitAndVerifyKafkaEvent() {
-        var fruitId = new int[]{ 0 };
-
-        TestCase.given("a new fruit payload", () -> { /* setup */ });
-
-        TestCase.when("the fruit is created via REST API", () -> {
-            fruitId[0] = given()
-                .contentType("application/json")
-                .body("{\"name\": \"Dragonfruit\", \"description\": \"Exotic pink fruit\"}")
-                .when().post("/fruits")
-                .then().statusCode(201).extract().path("id");
-        });
-
-        TestCase.then("the fruit is persisted in the database", () -> {
-            given().when().get("/fruits/" + fruitId[0])
-                .then().statusCode(200).body("name", is("Dragonfruit"));
-        });
-
-        TestCase.and("a FRUIT_CREATED event is published to Kafka", () -> {
-            String event = KafkaDriver.awaitMessage(
-                kafkaConsumer, "fruit-events",
-                KafkaDriver.messageContains("FRUIT_CREATED"));
-            assertThat(event).contains("Dragonfruit");
-        });
-    }
-}
-```
-
-<!--
-This is the crown jewel — a full BDD component test. Look at the annotations: @QuarkusTest boots the app, @QuarkusTestResource starts WireMock and Kafka test resources. The test extends AbstractComponentTest which manages the BDD lifecycle. Inside the test, we use TestCase.given/when/then steps that are logged with checkmarks or crosses on failure — super helpful for debugging in CI. We create a fruit via the REST API, verify it's persisted in the real database, and then assert that a FRUIT_CREATED event appeared on the real Kafka topic. This is testing the full chain: HTTP → business logic → database → messaging. Everything is real except external APIs which use WireMock.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# WireMock + BDD — External API Testing
-
-```java {all|1-11|13-20|22-24}{maxHeight:'420px'}
-@ComponentTest
-void getDetailsWithExternalNutritionApi() {
-    TestCase.given("the external nutrition API returns data for 'apple'", () -> {
-        RestMock.stubFor(
-            RestMock.get("/api/nutrition/apple"),
-            WireMock.aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"calories\": 95, \"sugar\": \"19g\", \"fiber\": \"4.4g\"}")
-        );
-    });
-
-    TestCase.when("we request details for the seeded Apple fruit", () -> {
-        given()
-            .when().get("/fruits/1/details")
-            .then()
-                .statusCode(200)
-                .body("name", is("Apple"))
-                .body("nutrition.calories", is(95));
-    });
-
-    TestCase.then("the external nutrition API was called exactly once", () -> {
-        RestMock.verify(1, RestMock.get("/api/nutrition/apple"));
-    });
-}
-```
-
-> 💡 `RestMock` wraps WireMock with a clean API — stub ↔ verify pattern for external service dependencies.
-
-<!--
-This test demonstrates WireMock integration beautifully. In the given step, we stub the external nutrition API using RestMock — our simplified wrapper around WireMock. When the application calls GET /fruits/1/details, it internally calls the NutritionClient which now hits WireMock instead of the real API. We verify the full response chain and then assert that WireMock was called exactly once. This pattern is powerful because it lets you test error scenarios too — what happens when the external API returns 500? Just change the stub. No need for a real external service.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# What the Failure Logging Looks Like
-
-When a BDD step fails, the `TestCase` utility prints an execution tree:
-
-```
-✘ Scenario createFruitAndVerifyKafkaEvent
-  ✓ Given  a new fruit payload
-  ✓ When   the fruit is created via REST API
-  ✓ Then   the fruit is persisted in the database
-  ✘ and    a FRUIT_CREATED event is published to Kafka
-           → Timeout waiting for message matching predicate on topic 'fruit-events'
-```
-
-<div class="mt-4">
-
-### Why this matters
-
-- Instantly see **which step** failed — no stack trace hunting
-- **Passed steps** are marked with ✓ — see how far execution got
-- Works great in **CI logs** — readable without IDE tooling
-- Inspired by the `quarkus-core` test framework used across 30+ services
-
-</div>
-
-<!--
-One of the best features of the BDD test infrastructure is the failure logging. When a test fails, instead of getting a raw stack trace, you get this execution tree. Every step is marked with a checkmark or a cross. You can instantly see that the first three steps passed and the fourth one failed — it was waiting for a Kafka message that never arrived. This is incredibly valuable in CI where you don't have IDE debugging. It's inspired by the quarkus-core framework that we use across more than thirty microservices.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# Results — 10 Tests, 3 Levels, Real Confidence
+# Results — 10 Tests, 2 Levels, Real Confidence
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div>
@@ -805,8 +639,7 @@ hideInToc: true
 | Test Class | Level | Tests |
 |---|---|---|
 | `UnitTest` | Unit 🐘 | 3 |
-| `ResourceTest` | Integration 🐘📨 | 4 |
-| `ComponentTest` | Component 🐘📨🔌 | 3 |
+| `ResourceTest` | Integration 🐘📨 | 7 |
 
 </div>
 <div>
@@ -815,7 +648,7 @@ hideInToc: true
 
 - ⚡ Mock what you isolate, real DB is free
 - 🎯 Zero config via Dev Services
-- 🏗️ BDD + WireMock + Kafka = full confidence
+- 🏗️ Real containers = real confidence
 - 🧹 All cleanup is automatic (Ryuk)
 - 🔄 Reproducible on any machine with Docker
 
@@ -829,7 +662,7 @@ hideInToc: true
 </div>
 
 <!--
-Let me show you the final results. We have 10 tests across 3 test classes covering 3 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. And the component tests combine everything: real database, real Kafka, and WireMock for external APIs with BDD-style steps. All 10 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
+Let me show you the final results. We have 10 tests across 2 test classes covering 2 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. All 10 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
 -->
 
 ---
