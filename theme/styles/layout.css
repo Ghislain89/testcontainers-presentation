@@ -122,11 +122,7 @@
     --at-apply: h-full grid;
 
     h1 {
-      --at-apply: text-6xl leading-20;
-      background: linear-gradient(135deg, var(--sn-sakura), var(--sn-moonlight));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      --at-apply: text-6xl leading-20 text-$sn-sakura-light;
     }
 
     h1 + p {
@@ -139,11 +135,7 @@
     --at-apply: h-full grid;
 
     h1 {
-      --at-apply: text-6xl leading-20;
-      background: linear-gradient(135deg, var(--sn-sakura), var(--sn-moonlight));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      --at-apply: text-6xl leading-20 text-$sn-sakura-light;
     }
 
     h1 + p {
@@ -155,11 +147,7 @@
   .slidev-layout.section {
 
     h1 {
-      --at-apply: text-6xl font-500 leading-20;
-      background: linear-gradient(135deg, var(--sn-sakura-light), var(--sn-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      --at-apply: text-6xl font-500 leading-20 text-$sn-sakura-light;
     }
   }
 
@@ -168,11 +156,7 @@
     --at-apply: text-center grid h-full;
 
     h1 {
-      --at-apply: text-8xl font-700;
-      background: linear-gradient(135deg, var(--sn-sakura), var(--sn-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      --at-apply: text-8xl font-700 text-$sn-sakura-light;
     }
 
     h1 + p {
