@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * COMPONENT TEST — Full stack with real PostgreSQL, real Kafka, and WireMock
  * for external HTTP dependencies. Uses BDD-style given/when/then steps
- * mirroring the ace-quarkus-core component test pattern.
+ * mirroring the quarkus-core component test pattern.
  */
 @QuarkusTest
 @QuarkusTestResource(WireMockLifecycleManager.class)
