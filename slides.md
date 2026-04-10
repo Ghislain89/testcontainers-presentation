@@ -97,32 +97,6 @@ layout: default
 hideInToc: true
 ---
 
-# The Traditional Approach
-
-When testing code that depends on external services, developers typically resort to:
-
-```mermaid
-flowchart LR
-    A[Test Code] -->|calls| B[Mock / Stub]
-    B -->|returns| C[Fake Response]
-    C -->|validates| D[Assertions]
-    style B fill:#ff6b6b,stroke:#333,color:#fff
-```
-
-- **Mocks** — Simulate behavior at the interface level
-- **Stubs** — Return canned responses
-- **In-memory replacements** — H2 instead of PostgreSQL, fakes instead of real services
-- **Shared test environments** — A single dev/test database everyone connects to
-
-<!--
-Let's talk about what most of us do today when we need to test code that talks to a database or an external service. We mock it, we stub it, we use in-memory replacements like H2 instead of a real PostgreSQL, or we all point at a shared test database. These approaches work — to a degree — but they come with real trade-offs. Let me show you what I mean.
--->
-
----
-layout: default
-hideInToc: true
----
-
 # Where Mocking Falls Short
 
 <div class="grid grid-cols-2 gap-12 mt-4">
@@ -134,7 +108,6 @@ hideInToc: true
 - **False confidence** — Tests pass, production breaks
 - **SQL dialect gaps** — H2 doesn't behave like PostgreSQL
 - **Missing edge cases** — Timeouts, connection limits, constraints
-- **Complex setup** — Mocking deep dependency trees is painful
 
 </div>
 <div>
@@ -151,13 +124,13 @@ when(repo.save(any()))
 // we never tested against a real database.
 ```
 
+</div>
+</div>
+
 > "Your mocks are only as good as your assumptions about the real system."
 
-</div>
-</div>
-
 <!--
-Here's where things get tricky. Mocks don't evolve with the real service. If someone adds a NOT NULL constraint to the database, your mock won't catch that. H2 has subtle SQL differences compared to PostgreSQL — I've personally seen tests pass on H2 and fail on production Postgres because of JSON operator differences. And look at this code example: the mock happily returns a saved entity, but in production, a UNIQUE constraint violation would blow up. Your mocks are only as good as your assumptions — and assumptions age badly.
+Most of us mock, stub, use H2 instead of real PostgreSQL, or share a test database. These approaches work to a degree, but they come with real trade-offs. Mocks don't evolve with the real service. H2 has subtle SQL differences compared to PostgreSQL. Look at this code example: the mock happily returns a saved entity, but in production, a UNIQUE constraint violation would blow up. Your mocks are only as good as your assumptions — and assumptions age badly.
 -->
 
 ---
@@ -232,9 +205,9 @@ layout: default
 hideInToc: true
 ---
 
-# Testcontainers Lifecycle
+# How Testcontainers Works
 
-```mermaid {scale: 0.75}
+```mermaid {scale: 0.7}
 sequenceDiagram
     participant Test as Test Suite
     participant TC as Testcontainers
@@ -249,37 +222,10 @@ sequenceDiagram
     TC->>Docker: Stop & remove container
 ```
 
-<!--
-Here's the lifecycle. Your test asks Testcontainers for a container — say PostgreSQL. The library pulls the Docker image if needed, starts the container, and then waits until it's actually ready — not just "running," but ready to accept connections. This is important because Docker's "running" state doesn't mean the service inside is ready. Once it's healthy, Testcontainers gives your test the connection details — host, port, JDBC URL — and your test runs against it. When tests are done, the container is stopped and removed. Clean slate every time.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# Architecture
-
-```mermaid
-flowchart TB
-    subgraph Your Test
-        A[Test Code] --> B[Testcontainers Library]
-    end
-    subgraph Docker
-        B -->|manages| C[🐘 PostgreSQL Container]
-        B -->|manages| D[📨 Kafka Container]
-        B -->|manages| E[🔴 Redis Container]
-        B -->|manages| F[🐳 Ryuk - cleanup sidecar]
-    end
-    A -->|connects to| C
-    A -->|produces/consumes| D
-    A -->|reads/writes| E
-```
-
-**Ryuk** is a special sidecar container that Testcontainers starts automatically. It tracks all containers created during the test session and cleans them up — even if your test crashes.
+> 💡 **Ryuk** — a sidecar container that auto-cleans up all test containers, even if your test process crashes.
 
 <!--
-From an architecture perspective, your test code talks to the Testcontainers library, which manages containers through the Docker API. You can have multiple containers running at once — a database, a message broker, a cache — whatever your application needs. And notice Ryuk in the corner there. It's a special cleanup container that Testcontainers starts automatically. It keeps track of all containers created during the session and ensures they're cleaned up, even if your test process gets killed or crashes unexpectedly. It's a safety net that prevents Docker from filling up with orphaned containers.
+Here's how it works. Your test asks Testcontainers for a container — say PostgreSQL. The library pulls the Docker image, starts the container, and waits until it's ready to accept connections. Then it gives your test the connection details and your test runs against the real service. When tests are done, everything is cleaned up. There's also Ryuk — a special sidecar container that tracks all containers and cleans them up even if your test crashes. It's a safety net that prevents Docker from filling up with orphaned containers.
 -->
 
 ---
@@ -289,14 +235,12 @@ hideInToc: true
 
 # Example 1 — PostgreSQL Integration Test
 
-```java {all|2-7|9-13|16-21}{maxHeight:'420px'}
+```java {all|2-5|7-11|15-18}{maxHeight:'420px'}
 @Testcontainers
 class UserRepositoryTest {
     @Container
     static PostgreSQLContainer<?> postgres =
-        new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("testdb")
-            .withUsername("test").withPassword("test");
+        new PostgreSQLContainer<>("postgres:16-alpine");
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
@@ -305,14 +249,10 @@ class UserRepositoryTest {
         registry.add("spring.datasource.password", postgres::getPassword);
     }
 
-    @Autowired UserRepository userRepository;
-
     @Test
     void shouldPersistAndRetrieveUser() {
         userRepository.save(new User("Ghislain", "ghislain@example.com"));
-        Optional<User> found = userRepository.findByEmail("ghislain@example.com");
-        assertThat(found).isPresent();
-        assertThat(found.get().getName()).isEqualTo("Ghislain");
+        assertThat(userRepository.findByEmail("ghislain@example.com")).isPresent();
     }
 }
 ```
@@ -326,71 +266,31 @@ layout: default
 hideInToc: true
 ---
 
-# Example 2 — REST API + Database Test
+# Example 2 — GenericContainer
 
-```java {all|1-3|5-11|14-22}{maxHeight:'420px'}
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@Testcontainers
-class ProductApiTest {
-    @Container
-    static PostgreSQLContainer<?> postgres =
-        new PostgreSQLContainer<>("postgres:16-alpine");
+Use **any** Docker image:
 
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-
-    @Autowired TestRestTemplate restTemplate;
-
-    @Test
-    void shouldCreateAndRetrieveProduct() {
-        var product = new Product("Testcontainers T-Shirt", 29.99);
-        var created = restTemplate.postForEntity("/api/products", product, Product.class);
-        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        var found = restTemplate.getForEntity(
-            "/api/products/" + created.getBody().getId(), Product.class);
-        assertThat(found.getBody().getName()).isEqualTo("Testcontainers T-Shirt");
-    }
-}
-```
-
-<!--
-This second example takes it up a notch. We're now testing a full REST API — a Spring Boot app with a real database behind it. The setup is almost identical: same PostgreSQL container, same DynamicPropertySource wiring. But now we're using TestRestTemplate to make actual HTTP calls to our API endpoints. We POST a product, verify we get a 201 Created back, then GET it by ID and verify the data came through correctly. This is a true end-to-end integration test — HTTP request, through the controller, service layer, repository, into a real PostgreSQL database and back. If there's a serialization issue, a constraint violation, or a query bug, this test will catch it.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# Example 3 — GenericContainer (Any Docker Image)
-
-Not limited to pre-built modules — use **any** Docker image:
-
-```java {all|3-5|8-14}
+```java {all|3-6|8-13}
 @Testcontainers
 class CustomServiceTest {
     @Container
-    static GenericContainer<?> wiremock = new GenericContainer<>("wiremock/wiremock:3.5.4")
-        .withExposedPorts(8080)
-        .waitingFor(Wait.forHttp("/__admin/mappings").forStatusCode(200));
+    static GenericContainer<?> wiremock =
+        new GenericContainer<>(
+            "wiremock/wiremock:3.5.4")
+            .withExposedPorts(8080)
+            .waitingFor(
+                Wait.forHttp("/__admin/mappings"));
 
     @Test
     void shouldConnectToWiremock() {
-        String baseUrl = "http://" + wiremock.getHost()
+        var url = "http://" + wiremock.getHost()
             + ":" + wiremock.getMappedPort(8080);
-        given().baseUri(baseUrl)
+        given().baseUri(url)
             .when().get("/__admin/mappings")
             .then().statusCode(200);
     }
 }
 ```
-
-> 💡 `GenericContainer` — if it runs in Docker, you can test with it.
 
 <!--
 Now here's where it gets really powerful. Testcontainers isn't limited to databases — you can run any Docker image using GenericContainer. In this example, we're spinning up a WireMock server to simulate an external API. We expose port 8080, and we use a wait strategy to make sure the WireMock admin API is responding before our test starts. Then we use getMappedPort to get the actual port Docker assigned. This pattern is great for testing against services that don't have a dedicated Testcontainers module yet. Basically, if it runs in Docker, you can use it in your tests.
@@ -475,56 +375,42 @@ hideInToc: true
 
 ### `@ServiceConnection` (3.1+)
 
-Eliminates manual wiring — Spring auto-discovers connection properties:
+Auto-discovers connection properties:
 
 ```java
 @Container @ServiceConnection
 static PostgreSQLContainer<?> postgres =
     new PostgreSQLContainer<>("postgres:16-alpine");
-// No @DynamicPropertySource needed!
 ```
 
 ### Container reuse
-
-Keep containers alive across JVM restarts:
 
 ```java
 new PostgreSQLContainer<>("postgres:16-alpine")
     .withReuse(true);
 ```
 
-<div class="text-xs mt-1">
-
-`~/.testcontainers.properties` → `testcontainers.reuse.enable=true`
-
-</div>
-
 </div>
 <div>
 
-### Test slicing (avoid loading everything)
+### Test slicing
 
 | Annotation | Loads only |
 |---|---|
-| `@DataJpaTest` | JPA + DB (~2–3s) |
-| `@WebMvcTest` | Controllers only |
-| `@JsonTest` | Serialization only |
+| `@DataJpaTest` | JPA + DB |
+| `@WebMvcTest` | Controllers |
+| `@JsonTest` | Serialization |
 
 ### Avoid context pollution
 
-- ❌ Each unique `@MockBean` combo → **new ApplicationContext** → new containers
-- ❌ `@DirtiesContext` → forces full rebuild
-- ✅ Group tests sharing the same mock setup
-- ✅ Use `@Import` with test configurations
+- ❌ Unique `@MockBean` combo → new context
+- ❌ `@DirtiesContext` → full rebuild
+- ✅ Group tests with same mock setup
 
 </div>
 </div>
 
-<div class="mt-4 text-center text-sm">
-
-> 💡 Spring Boot can get close — but you're **opting in** to optimizations that Quarkus provides **by default**.
-
-</div>
+> 💡 Spring Boot can get close — but you **opt in** to what Quarkus provides **by default**.
 
 <!--
 Now, to be fair — I don't want to turn this into a "Quarkus good, Spring bad" talk. Spring Boot has made significant improvements, and there are concrete things you can do to close this gap. Let me walk you through them.
@@ -669,7 +555,7 @@ hideInToc: true
 </div>
 
 <!--
-In our demo app, we test at three distinct levels. At the bottom, unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any external API calls. And at the top, component tests bring in WireMock for external APIs and use BDD-style given/when/then steps — this is the pattern from ace-quarkus-core. Each level catches different types of bugs.
+In our demo app, we test at three distinct levels. At the bottom, unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any external API calls. And at the top, component tests bring in WireMock for external APIs and use BDD-style given/when/then steps — this is the pattern from quarkus-core. Each level catches different types of bugs.
 -->
 
 ---
@@ -767,58 +653,10 @@ Integration tests are the cleanest. Just annotate with @QuarkusTest and write yo
 -->
 
 ---
-layout: default
-hideInToc: true
----
-
-# Level 2b — Explicit Testcontainers (When You Need Control)
-
-```java {all|1-8|10-19|21-29}{maxHeight:'420px'}
-@QuarkusTest
-@TestProfile(FruitResourceExplicitContainerTest.PostgresProfile.class)
-class FruitResourceExplicitContainerTest {
-
-    static final PostgreSQLContainer<?> POSTGRES =
-        new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("fruits_test")
-            .withUsername("test").withPassword("test");
-    static { POSTGRES.start(); }
-
-    public static class PostgresProfile implements QuarkusTestProfile {
-        @Override
-        public Map<String, String> getConfigOverrides() {
-            return Map.of(
-                "quarkus.datasource.jdbc.url", POSTGRES.getJdbcUrl(),
-                "quarkus.datasource.username", POSTGRES.getUsername(),
-                "quarkus.datasource.password", POSTGRES.getPassword(),
-                "quarkus.datasource.devservices.enabled", "false"
-            );
-        }
-    }
-
-    @Test
-    void shouldPersistToExplicitContainer() {
-        int id = given()
-            .contentType("application/json")
-            .body("{\"name\": \"Pineapple\", \"description\": \"Spiky but sweet\"}")
-            .when().post("/fruits")
-            .then().statusCode(201).extract().path("id");
-
-        given().when().get("/fruits/" + id)
-            .then().statusCode(200).body("name", is("Pineapple"));
-    }
-}
-```
-
-<!--
-Sometimes you need full control over the container — a specific PostgreSQL version, custom init scripts, or a particular configuration. In that case, you can still use explicit Testcontainers. In Quarkus, you wire it through a TestProfile that overrides the datasource config and disables Dev Services. The pattern is the same as the Spring Boot examples we saw, but uses Quarkus' config override mechanism instead of DynamicPropertySource. Use this approach when Dev Services' defaults don't match your needs.
--->
-
----
 layout: section
 ---
 
-# Building Reusable Test Infrastructure
+# Level 3 — Component Tests & Shared Infrastructure
 
 ---
 layout: default
@@ -827,11 +665,11 @@ hideInToc: true
 
 # The Shared Library Pattern
 
-In a large project, every service needs the same test setup. Instead of copy-pasting:
+In a large project, every service needs the same test setup. Extract it:
 
 ```mermaid
 flowchart TB
-    subgraph "ace-quarkus-core (shared library)"
+    subgraph "quarkus-core (shared library)"
         A[🔌 WireMock Lifecycle Manager]
         B[📨 Kafka Test Resources]
         C[🧪 BDD TestCase Utility]
@@ -844,60 +682,10 @@ flowchart TB
     end
 ```
 
-<div class="mt-4 text-sm">
-
-| Component | What it does |
-|---|---|
-| `WireMockLifecycleManager` | Auto-starts WireMock, injects base URL into REST client config |
-| `KafkaMessagingResource` | Provides `KafkaMessageConsumer` / `Producer` for event assertions |
-| `TestCase` | BDD given/when/then with execution logging (✓/✘ tree on failure) |
-| `RestAssuredConfigurationExtension` | Auto-configures RestAssured for all `@QuarkusTest` classes |
-
-</div>
+> 💡 The `WireMockLifecycleManager` implements `QuarkusTestResourceLifecycleManager` — it auto-starts WireMock on a dynamic port and rewires REST client URLs via config overrides.
 
 <!--
-When you have dozens of microservices that all need PostgreSQL, Kafka, and WireMock in their tests, you don't want to copy-paste the same setup into each one. In our project, we extracted this into a shared library called ace-quarkus-core. It provides reusable test resources: a WireMock lifecycle manager, Kafka test utilities, BDD scaffolding, and RestAssured configuration. Every service just depends on this library and gets consistent, well-maintained test infrastructure out of the box.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# WireMock as a Quarkus Test Resource
-
-```java {all|1-11|13-18|20-24}{maxHeight:'420px'}
-public class WireMockLifecycleManager
-        implements QuarkusTestResourceLifecycleManager {
-    private WireMockServer wireMockServer;
-
-    @Override
-    public Map<String, String> start() {
-        wireMockServer = new WireMockServer(options().dynamicPort());
-        wireMockServer.start();
-
-        String endpoint = "http://localhost:" + wireMockServer.port();
-        return Map.of(
-            "wiremock.server.base-url", endpoint,
-            "quarkus.rest-client.nutrition-api.url", endpoint  // ← rewires REST client
-        );
-    }
-
-    @Override
-    public void stop() { wireMockServer.stop(); }
-
-    @Override
-    public void inject(TestInjector testInjector) {
-        testInjector.injectIntoFields(wireMockServer.port(),
-            new TestInjector.AnnotatedAndMatchesType(WireMockPort.class, Integer.TYPE));
-    }
-}
-```
-
-> 💡 Returning config map entries **automatically overrides** `application.properties` — the REST client now calls WireMock instead of the real API.
-
-<!--
-Here's the core of the WireMock integration. The WireMockLifecycleManager implements Quarkus' QuarkusTestResourceLifecycleManager interface. When Quarkus starts the test, it calls start() — we spin up WireMock on a dynamic port and return a map of configuration overrides. The key trick is that we override the REST client URL to point at WireMock. So the NutritionClient that normally calls an external API now transparently calls WireMock. The inject method lets us inject the WireMock port directly into test fields. Cleanup happens automatically in stop().
+When you have dozens of microservices that all need PostgreSQL, Kafka, and WireMock in their tests, you don't want to copy-paste the same setup into each one. We extracted this into a shared library called quarkus-core. It provides reusable test resources: a WireMock lifecycle manager that auto-starts WireMock and rewires REST client config, Kafka test utilities, BDD scaffolding, and RestAssured configuration. Every service just depends on this library and gets consistent, well-maintained test infrastructure out of the box.
 -->
 
 ---
@@ -1015,12 +803,12 @@ When a BDD step fails, the `TestCase` utility prints an execution tree:
 - Instantly see **which step** failed — no stack trace hunting
 - **Passed steps** are marked with ✓ — see how far execution got
 - Works great in **CI logs** — readable without IDE tooling
-- Inspired by the `ace-quarkus-core` test framework used across 30+ services
+- Inspired by the `quarkus-core` test framework used across 30+ services
 
 </div>
 
 <!--
-One of the best features of the BDD test infrastructure is the failure logging. When a test fails, instead of getting a raw stack trace, you get this execution tree. Every step is marked with a checkmark or a cross. You can instantly see that the first three steps passed and the fourth one failed — it was waiting for a Kafka message that never arrived. This is incredibly valuable in CI where you don't have IDE debugging. It's inspired by the ace-quarkus-core framework that we use across more than thirty microservices.
+One of the best features of the BDD test infrastructure is the failure logging. When a test fails, instead of getting a raw stack trace, you get this execution tree. Every step is marked with a checkmark or a cross. You can instantly see that the first three steps passed and the fourth one failed — it was waiting for a Kafka message that never arrived. This is incredibly valuable in CI where you don't have IDE debugging. It's inspired by the quarkus-core framework that we use across more than thirty microservices.
 -->
 
 ---
@@ -1028,40 +816,39 @@ layout: default
 hideInToc: true
 ---
 
-# Results — 12 Tests, 3 Levels, Real Confidence
+# Results — 10 Tests, 3 Levels, Real Confidence
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div>
 
-| Test Class | Level | Containers | Tests |
-|---|---|---|---|
-| `FruitResourceUnitTest` | Unit | 🐘 PostgreSQL | 3 |
-| `FruitResourceTest` | Integration | 🐘 + 📨 | 4 |
-| `ExplicitContainerTest` | Integration | 🐘 (explicit) + 📨 | 2 |
-| `FruitComponentTest` | Component | 🐘 + 📨 + 🔌 | 3 |
+| Test Class | Level | Tests |
+|---|---|---|
+| `UnitTest` | Unit 🐘 | 3 |
+| `ResourceTest` | Integration 🐘📨 | 4 |
+| `ComponentTest` | Component 🐘📨🔌 | 3 |
 
 </div>
 <div>
 
 ### Key takeaways
 
-- ⚡ **Unit**: Mock what you isolate, real DB is free
-- 🎯 **Integration**: Zero config via Dev Services
-- 🏗️ **Component**: BDD + WireMock + Kafka = full confidence
-- 🧹 **All cleanup is automatic** — Ryuk handles it
-- 🔄 **Reproducible** — works on any machine with Docker
+- ⚡ Mock what you isolate, real DB is free
+- 🎯 Zero config via Dev Services
+- 🏗️ BDD + WireMock + Kafka = full confidence
+- 🧹 All cleanup is automatic (Ryuk)
+- 🔄 Reproducible on any machine with Docker
 
 </div>
 </div>
 
 <div class="mt-4 text-center text-lg">
 
-`mvn test` → **12 tests** ✅ **BUILD SUCCESS** (26s)
+`mvn test` → **10 tests** ✅ **BUILD SUCCESS** (26s)
 
 </div>
 
 <!--
-Let me show you the final results. We have 12 tests across 4 test classes covering 3 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. The explicit container test shows you can still take control when needed. And the component tests combine everything: real database, real Kafka, and WireMock for external APIs with BDD-style steps. All 12 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
+Let me show you the final results. We have 10 tests across 3 test classes covering 3 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. And the component tests combine everything: real database, real Kafka, and WireMock for external APIs with BDD-style steps. All 10 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
 -->
 
 ---
@@ -1075,7 +862,7 @@ layout: default
 hideInToc: true
 ---
 
-# Tips for Real-World Usage
+# Tips & Getting Started
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div>
@@ -1087,9 +874,6 @@ hideInToc: true
 - **Pin image tags** (e.g. `postgres:16-alpine`)
 - **Use `.waitingFor()`** strategies
 
-</div>
-<div>
-
 ### ❌ Avoid
 
 - New container per test method — it's slow
@@ -1097,37 +881,11 @@ hideInToc: true
 - Replacing **all** mocks — unit tests are still valuable
 
 </div>
-</div>
+<div>
 
-<div class="mt-6 text-center">
-
-### The Testing Sweet Spot
-
-`Unit Tests (mocks) ⚡ → Integration Tests (Testcontainers) 🎯 → E2E Tests 🐢`
-
-</div>
-
-<!--
-A few tips from real-world experience. First, make your containers static and reuse them across test methods — spinning up a new PostgreSQL for every single test is wasteful when you can just clear the data between tests. Always use DynamicPropertySource or equivalent — never hardcode ports, because Testcontainers maps to random ports each time. Pin your image tags — using :latest might surprise you when an image update changes behavior. And use wait strategies so your tests don't start before the container is actually ready. On the flip side, don't go overboard replacing every mock with a container. Unit tests with mocks are still fast and valuable. Think of it as a testing pyramid — mocks for unit tests, Testcontainers for integration tests, and a few end-to-end tests at the top.
--->
-
----
-layout: default
-hideInToc: true
----
-
-# Getting Started
-
-Add Testcontainers to your project:
+### 🚀 Getting Started
 
 ```xml
-<!-- Maven -->
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>testcontainers</artifactId>
-    <version>1.20.4</version>
-    <scope>test</scope>
-</dependency>
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>postgresql</artifactId>
@@ -1136,16 +894,15 @@ Add Testcontainers to your project:
 </dependency>
 ```
 
-**Prerequisites:**
-- Docker installed and running
-- JUnit 5
-- That's it! 🎉
+**Prerequisites:** Docker + JUnit 5. That's it! 🎉
 
-📚 Docs: [testcontainers.com](https://testcontainers.com)  
-💻 GitHub: [github.com/testcontainers](https://github.com/testcontainers)
+📚 [testcontainers.com](https://testcontainers.com) | 💻 [github.com/testcontainers](https://github.com/testcontainers)
+
+</div>
+</div>
 
 <!--
-Getting started is straightforward. Add the Testcontainers BOM and the module you need — here we're adding the core library and the PostgreSQL module. You need Docker installed and running, and JUnit 5. That's literally it. No complex infrastructure setup, no test environment provisioning. The official docs at testcontainers.com are excellent and have examples for every supported module.
+A few tips from real-world experience. Make your containers static and reuse them across test methods. Always use DynamicPropertySource — never hardcode ports. Pin your image tags. And use wait strategies. Don't replace every mock with a container — unit tests are still valuable. Getting started is easy: add the dependency, have Docker running, and you're good to go.
 -->
 
 ---
