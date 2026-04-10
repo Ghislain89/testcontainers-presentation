@@ -32,7 +32,10 @@
 /* ── Base slide styling ── */
 #app {
   #slide-content {
-    --at-apply: text-$foreground bg-$background !important;
+    --at-apply: text-$foreground !important;
+    background:
+      url('/sakura-landscape.svg') bottom center / 100% auto no-repeat,
+      linear-gradient(180deg, var(--sn-deep-indigo) 0%, var(--sn-night-blue) 60%, #1a2248 100%) !important;
 
     h1, h2, h3, h4, h5, h6 {
       --at-apply: text-$sn-sakura;
@@ -117,10 +120,6 @@
   /* ── Layout: Intro ── */
   .slidev-layout.intro {
     --at-apply: h-full grid;
-    background:
-      radial-gradient(ellipse at 70% 20%, rgba(155, 126, 207, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 30% 80%, rgba(85, 136, 204, 0.1) 0%, transparent 50%),
-      var(--sn-deep-indigo);
 
     h1 {
       --at-apply: text-6xl leading-20;
@@ -154,9 +153,6 @@
 
   /* ── Layout: Section ── */
   .slidev-layout.section {
-    background:
-      radial-gradient(ellipse at 50% 50%, rgba(232, 126, 161, 0.08) 0%, transparent 60%),
-      var(--sn-deep-indigo);
 
     h1 {
       --at-apply: text-6xl font-500 leading-20;
