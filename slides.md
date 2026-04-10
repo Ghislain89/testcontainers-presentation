@@ -144,10 +144,8 @@ hideInToc: true
 |---|---|---|
 | **Fidelity** | Simulated behavior | Real service behavior |
 | **SQL Dialect** | Generic (H2) | Exact production DB |
-| **Environment** | No infra needed | Docker required |
 | **Speed** | Very fast | Slightly slower |
 | **Confidence** | Medium | High |
-| **Isolation** | Per-test by design | Per-test containers |
 | **Maintenance** | Keep mocks in sync | Self-updating |
 
 > 💡 Testcontainers doesn't replace **all** mocking — it shines for **integration tests**.
