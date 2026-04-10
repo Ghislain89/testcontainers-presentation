@@ -144,10 +144,8 @@ hideInToc: true
 |---|---|---|
 | **Fidelity** | Simulated behavior | Real service behavior |
 | **SQL Dialect** | Generic (H2) | Exact production DB |
-| **Environment** | No infra needed | Docker required |
 | **Speed** | Very fast | Slightly slower |
 | **Confidence** | Medium | High |
-| **Isolation** | Per-test by design | Per-test containers |
 | **Maintenance** | Keep mocks in sync | Self-updating |
 
 > 💡 Testcontainers doesn't replace **all** mocking — it shines for **integration tests**.
@@ -314,35 +312,24 @@ hideInToc: true
 
 ### 🍃 Spring Boot
 
-- Full classpath scan + auto-config **at runtime**
-- `@SpringBootTest` startup: **5–15 seconds**
-- `@MockBean` / `@DynamicPropertySource` change → **new ApplicationContext** → may restart containers
-- Container setup: **manual** (`@Container` + `@DynamicPropertySource`)
-- No built-in continuous test mode
+- Classpath scan + auto-config **at runtime**
+- `@SpringBootTest` startup: **5–15s**
+- `@MockBean` change → **new context** → new containers
+- Container setup: **manual**
+- No continuous test mode
 
 </div>
 <div>
 
 ### ⚡ Quarkus
 
-- Bean wiring + config resolution **at build time**
-- `@QuarkusTest` startup: **1–3 seconds**
-- `@InjectMock` swaps beans **in-place** → single shared context across all tests
+- Bean wiring + config **at build time**
+- `@QuarkusTest` startup: **1–3s**
+- `@InjectMock` swaps **in-place** → shared context
 - Container setup: **automatic** (Dev Services)
-- `quarkus:dev` → tests re-run on save in **< 2 seconds**
+- `quarkus:dev` → re-run on save **< 2s**
 
 </div>
-</div>
-
-<div class="mt-6 text-center">
-
-| | Spring Boot | Quarkus |
-|---|---|---|
-| **App boot** | 5–15s (runtime wiring) | 1–3s (build-time wiring) |
-| **Container reuse** | New context = new containers | Shared across all test classes |
-| **Config wiring** | Manual (`@DynamicPropertySource`) | Zero-config (Dev Services) |
-| **Live testing** | ❌ Restart on change | ✅ `quarkus:dev` continuous mode |
-
 </div>
 
 <!--
@@ -653,17 +640,11 @@ Integration tests are the cleanest. Just annotate with @QuarkusTest and write yo
 -->
 
 ---
-layout: section
----
-
-# Level 3 — Component Tests & Shared Infrastructure
-
----
 layout: default
 hideInToc: true
 ---
 
-# The Shared Library Pattern
+# Level 3 — Shared Test Infrastructure
 
 In a large project, every service needs the same test setup. Extract it:
 
