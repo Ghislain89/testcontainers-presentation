@@ -9,6 +9,8 @@ hideInToc: true
 
 Ghislain Gabriëlse
 
+<img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
+
 <!--
 Welcome everyone! Today I'm going to talk about Testcontainers — a tool that has fundamentally changed how I think about integration testing. By the end of this session, you'll understand what Testcontainers is, why it's better than traditional mocking for integration tests, and how to start using it in your own projects.
 -->
@@ -739,6 +741,8 @@ Questions? 🙋
 🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules
 
 </div>
+
+<img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
 
 <!--
 That wraps up the presentation! To summarize: Testcontainers lets you test against real services in Docker, giving you much higher confidence than mocks for integration tests. It's easy to set up, fully isolated, reproducible, and cleans up after itself. I'd encourage you to try it on your next project — start with one integration test against a real database and see how it feels. Happy to take any questions!
