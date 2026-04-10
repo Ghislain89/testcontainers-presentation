@@ -7,9 +7,10 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 /**
- * Demonstrates Quarkus Dev Services: Quarkus automatically starts a PostgreSQL
- * container via Testcontainers when it detects the postgresql JDBC driver on the
- * classpath and no explicit datasource URL is configured. Zero configuration needed!
+ * Unit integration test: Quarkus boots with REAL PostgreSQL (Dev Services)
+ * and REAL Kafka. No mocks — tests the full stack against actual containers.
+ *
+ * Flyway runs migrations automatically; seed data comes from V2__seed_fruits.sql.
  */
 @QuarkusTest
 class FruitResourceTest {
@@ -26,7 +27,6 @@ class FruitResourceTest {
 
     @Test
     void shouldCreateAndFetchFruit() {
-        // Create a new fruit
         int id = given()
             .contentType("application/json")
             .body("{\"name\": \"Mango\", \"description\": \"Tropical and juicy\"}")
@@ -36,7 +36,6 @@ class FruitResourceTest {
                 .body("name", is("Mango"))
                 .extract().path("id");
 
-        // Fetch it back — data is persisted in the real PostgreSQL container
         given()
             .when().get("/fruits/" + id)
             .then()
@@ -47,7 +46,6 @@ class FruitResourceTest {
 
     @Test
     void shouldDeleteFruit() {
-        // Create a fruit to delete
         int id = given()
             .contentType("application/json")
             .body("{\"name\": \"Kiwi\", \"description\": \"Fuzzy green fruit\"}")
@@ -56,13 +54,11 @@ class FruitResourceTest {
                 .statusCode(201)
                 .extract().path("id");
 
-        // Delete it
         given()
             .when().delete("/fruits/" + id)
             .then()
                 .statusCode(204);
 
-        // Verify it's gone
         given()
             .when().get("/fruits/" + id)
             .then()

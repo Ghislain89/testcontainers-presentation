@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.*;
 @TestProfile(FruitResourceExplicitContainerTest.PostgresProfile.class)
 class FruitResourceExplicitContainerTest {
 
-    // Explicit container — you control the image version & config
     static final PostgreSQLContainer<?> POSTGRES =
         new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("fruits_test")
@@ -35,8 +34,8 @@ class FruitResourceExplicitContainerTest {
     }
 
     /**
-     * A Quarkus test profile that overrides datasource config to point
-     * at our manually-started container instead of using Dev Services.
+     * Overrides datasource config to point at the explicit container.
+     * Flyway still runs migrations against this container automatically.
      */
     public static class PostgresProfile implements QuarkusTestProfile {
         @Override
@@ -52,7 +51,6 @@ class FruitResourceExplicitContainerTest {
 
     @Test
     void shouldPersistToExplicitContainer() {
-        // Create a fruit in the explicitly-managed PostgreSQL container
         int id = given()
             .contentType("application/json")
             .body("{\"name\": \"Pineapple\", \"description\": \"Spiky but sweet\"}")
@@ -62,7 +60,6 @@ class FruitResourceExplicitContainerTest {
                 .body("name", is("Pineapple"))
                 .extract().path("id");
 
-        // Read it back — proves data round-trips through real PostgreSQL
         given()
             .when().get("/fruits/" + id)
             .then()
@@ -77,6 +74,6 @@ class FruitResourceExplicitContainerTest {
             .when().get("/fruits")
             .then()
                 .statusCode(200)
-                .body("size()", greaterThanOrEqualTo(3)); // seeded data
+                .body("size()", greaterThanOrEqualTo(3));
     }
 }
