@@ -653,17 +653,11 @@ Integration tests are the cleanest. Just annotate with @QuarkusTest and write yo
 -->
 
 ---
-layout: section
----
-
-# Level 3 — Component Tests & Shared Infrastructure
-
----
 layout: default
 hideInToc: true
 ---
 
-# The Shared Library Pattern
+# Level 3 — Shared Test Infrastructure
 
 In a large project, every service needs the same test setup. Extract it:
 
