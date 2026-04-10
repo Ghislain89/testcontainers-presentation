@@ -1,0 +1,92 @@
+<svg viewBox="0 -40 960 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Moon with soft glow -->
+  <circle cx="820" cy="0" r="45" fill="#c9b8e8" opacity="0.05"/>
+  <circle cx="820" cy="0" r="28" fill="#c9b8e8" opacity="0.1"/>
+  <circle cx="820" cy="0" r="18" fill="#c9b8e8" opacity="0.12"/>
+  <!-- Far mountains -->
+  <path d="M0 120 Q100 55 220 100 Q340 45 460 85 Q560 35 680 75 Q800 30 960 85 V220 H0Z" fill="#131840" opacity="0.7"/>
+  <!-- Snow hints on peaks -->
+  <path d="M340 45 Q350 52 335 55 Q340 48 345 50Z" fill="#c9b8e8" opacity="0.05"/>
+  <path d="M560 35 Q570 42 555 47 Q560 39 565 42Z" fill="#c9b8e8" opacity="0.05"/>
+  <!-- Mid mountains -->
+  <path d="M0 150 Q130 105 270 135 Q420 95 540 125 Q670 90 810 118 Q910 100 960 130 V220 H0Z" fill="#181f48" opacity="0.8"/>
+  <!-- Lake -->
+  <rect x="0" y="160" width="960" height="60" fill="#0c1230" opacity="0.65"/>
+  <!-- Lake shimmer lines -->
+  <line x1="60" y1="174" x2="180" y2="174" stroke="#5588cc" stroke-opacity="0.12" stroke-width="0.8"/>
+  <line x1="250" y1="180" x2="400" y2="180" stroke="#9b7ecf" stroke-opacity="0.08" stroke-width="0.8"/>
+  <line x1="480" y1="172" x2="600" y2="172" stroke="#5588cc" stroke-opacity="0.1" stroke-width="0.8"/>
+  <line x1="650" y1="182" x2="780" y2="182" stroke="#5588cc" stroke-opacity="0.08" stroke-width="0.8"/>
+  <line x1="150" y1="188" x2="320" y2="188" stroke="#9b7ecf" stroke-opacity="0.06" stroke-width="0.8"/>
+  <line x1="550" y1="190" x2="700" y2="190" stroke="#5588cc" stroke-opacity="0.05" stroke-width="0.8"/>
+  <line x1="820" y1="176" x2="920" y2="176" stroke="#9b7ecf" stroke-opacity="0.07" stroke-width="0.8"/>
+  <!-- Traditional house -->
+  <g transform="translate(200, 122)" opacity="0.6">
+    <rect x="-20" y="10" width="40" height="30" fill="#12162e" rx="1"/>
+    <path d="M-30 10 Q0 -8 30 10Z" fill="#171d3a"/>
+    <rect x="-4" y="22" width="8" height="18" fill="#0b1026" opacity="0.5"/>
+    <rect x="-16" y="16" width="7" height="5" fill="#d4a86a" opacity="0.15" rx="0.5"/>
+    <rect x="9" y="16" width="7" height="5" fill="#d4a86a" opacity="0.12" rx="0.5"/>
+  </g>
+  <!-- Pagoda -->
+  <g transform="translate(720, 95)" fill="#0f1430" opacity="0.55">
+    <rect x="-14" y="32" width="28" height="28" rx="1"/>
+    <path d="M-22 32 L0 18 L22 32Z"/>
+    <path d="M-18 20 L0 8 L18 20Z"/>
+    <path d="M-14 10 L0 0 L14 10Z"/>
+    <line x1="0" y1="0" x2="0" y2="-6" stroke="#0f1430" stroke-width="1.5" opacity="0.55"/>
+  </g>
+  <!-- Torii gate -->
+  <g transform="translate(500, 132)" opacity="0.4">
+    <rect x="-10" y="5" width="2.5" height="26" fill="#6b2020"/>
+    <rect x="7.5" y="5" width="2.5" height="26" fill="#6b2020"/>
+    <rect x="-14" y="3" width="28" height="2.5" fill="#6b2020" rx="1"/>
+    <rect x="-12" y="9" width="24" height="1.5" fill="#6b2020"/>
+  </g>
+  <!-- Cherry tree left -->
+  <g transform="translate(80, 108)">
+    <path d="M0 55 Q-3 32 -8 18 Q-13 6 -20 -8" stroke="#2a1825" stroke-width="3" fill="none" opacity="0.5"/>
+    <path d="M0 55 Q4 28 12 10 Q17 -2 24 -12" stroke="#2a1825" stroke-width="2.5" fill="none" opacity="0.5"/>
+    <path d="M-8 18 Q-22 10 -32 3" stroke="#2a1825" stroke-width="1.8" fill="none" opacity="0.4"/>
+    <path d="M12 10 Q22 2 30 -5" stroke="#2a1825" stroke-width="1.5" fill="none" opacity="0.35"/>
+    <circle cx="-20" cy="-8" r="12" fill="#e87ea1" opacity="0.13"/>
+    <circle cx="-32" cy="0" r="8" fill="#f5a4be" opacity="0.1"/>
+    <circle cx="-12" cy="-16" r="7" fill="#e87ea1" opacity="0.09"/>
+    <circle cx="24" cy="-12" r="13" fill="#e87ea1" opacity="0.13"/>
+    <circle cx="14" cy="-5" r="8" fill="#f5a4be" opacity="0.1"/>
+    <circle cx="30" cy="-5" r="7" fill="#f5a4be" opacity="0.08"/>
+    <circle cx="34" cy="-18" r="6" fill="#e87ea1" opacity="0.07"/>
+  </g>
+  <!-- Cherry tree right -->
+  <g transform="translate(870, 112)">
+    <path d="M0 50 Q-5 28 -14 10 Q-18 -2 -22 -12" stroke="#2a1825" stroke-width="2.5" fill="none" opacity="0.45"/>
+    <path d="M0 50 Q5 25 10 8 Q13 -3 18 -10" stroke="#2a1825" stroke-width="2" fill="none" opacity="0.4"/>
+    <path d="M-14 10 Q-24 4 -30 -2" stroke="#2a1825" stroke-width="1.5" fill="none" opacity="0.35"/>
+    <circle cx="-22" cy="-12" r="10" fill="#e87ea1" opacity="0.11"/>
+    <circle cx="-30" cy="-2" r="7" fill="#f5a4be" opacity="0.08"/>
+    <circle cx="-14" cy="-18" r="6" fill="#e87ea1" opacity="0.07"/>
+    <circle cx="18" cy="-10" r="10" fill="#e87ea1" opacity="0.11"/>
+    <circle cx="10" cy="-3" r="6" fill="#f5a4be" opacity="0.08"/>
+  </g>
+  <!-- Small tree near house -->
+  <g transform="translate(250, 125)">
+    <path d="M0 35 Q-2 18 -6 5" stroke="#2a1825" stroke-width="1.5" fill="none" opacity="0.35"/>
+    <circle cx="-6" cy="2" r="7" fill="#e87ea1" opacity="0.09"/>
+    <circle cx="0" cy="-2" r="5" fill="#f5a4be" opacity="0.07"/>
+  </g>
+  <!-- Falling petals -->
+  <circle cx="130" cy="55" r="1.5" fill="#e87ea1" opacity="0.2"/>
+  <circle cx="60" cy="80" r="1" fill="#f5a4be" opacity="0.14"/>
+  <circle cx="200" cy="70" r="1.3" fill="#e87ea1" opacity="0.16"/>
+  <circle cx="350" cy="50" r="1" fill="#f5a4be" opacity="0.1"/>
+  <circle cx="450" cy="75" r="1.2" fill="#e87ea1" opacity="0.12"/>
+  <circle cx="600" cy="55" r="1" fill="#f5a4be" opacity="0.1"/>
+  <circle cx="750" cy="45" r="1.5" fill="#e87ea1" opacity="0.16"/>
+  <circle cx="830" cy="65" r="1.2" fill="#f5a4be" opacity="0.12"/>
+  <circle cx="920" cy="80" r="1" fill="#e87ea1" opacity="0.1"/>
+  <circle cx="300" cy="90" r="1" fill="#e87ea1" opacity="0.08"/>
+  <circle cx="550" cy="40" r="1.3" fill="#f5a4be" opacity="0.1"/>
+  <circle cx="680" cy="70" r="1" fill="#e87ea1" opacity="0.1"/>
+  <!-- Shore line -->
+  <path d="M0 160 Q240 153 480 160 Q720 153 960 160 V220 H0Z" fill="#0e1335" opacity="0.4"/>
+</svg>

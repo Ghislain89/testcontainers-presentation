@@ -9,6 +9,8 @@ hideInToc: true
 
 Ghislain Gabriëlse
 
+<img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
+
 <!--
 Welcome everyone! Today I'm going to talk about Testcontainers — a tool that has fundamentally changed how I think about integration testing. By the end of this session, you'll understand what Testcontainers is, why it's better than traditional mocking for integration tests, and how to start using it in your own projects.
 -->
@@ -726,19 +728,34 @@ hideInToc: true
 
 # Thank You!
 
-<div class="mt-8 text-center text-xl">
+<div class="grid grid-cols-[1fr_auto] gap-8 mt-8">
+<div>
+
+<div class="text-xl">
 
 Questions? 🙋
 
 </div>
 
-<div class="mt-12 text-center">
+<div class="mt-8 text-sm">
 
 📚 [testcontainers.com](https://testcontainers.com) — Official documentation  
 💻 [github.com/testcontainers](https://github.com/testcontainers) — Source code & examples  
-🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules
+🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules  
+🎤 [github.com/Ghislain89/testcontainers-presentation](https://github.com/Ghislain89/testcontainers-presentation) — This presentation
 
 </div>
+
+</div>
+<div class="flex flex-col items-center">
+
+<img src="/qr-code.svg" class="w-40 h-40" />
+<span class="text-xs mt-2 text-gray-400">Scan for slides & Demo Code</span>
+
+</div>
+</div>
+
+<img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
 
 <!--
 That wraps up the presentation! To summarize: Testcontainers lets you test against real services in Docker, giving you much higher confidence than mocks for integration tests. It's easy to set up, fully isolated, reproducible, and cleans up after itself. I'd encourage you to try it on your next project — start with one integration test against a real database and see how it feels. Happy to take any questions!
