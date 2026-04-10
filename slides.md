@@ -728,18 +728,30 @@ hideInToc: true
 
 # Thank You!
 
-<div class="mt-8 text-center text-xl">
+<div class="grid grid-cols-[1fr_auto] gap-8 mt-8">
+<div>
+
+<div class="text-xl">
 
 Questions? 🙋
 
 </div>
 
-<div class="mt-12 text-center">
+<div class="mt-8 text-sm">
 
 📚 [testcontainers.com](https://testcontainers.com) — Official documentation  
 💻 [github.com/testcontainers](https://github.com/testcontainers) — Source code & examples  
 🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules
 
+</div>
+
+</div>
+<div class="flex flex-col items-center">
+
+<img src="/qr-code.svg" class="w-40 h-40" />
+<span class="text-xs mt-2 text-gray-400">Scan for slides & Demo Code</span>
+
+</div>
 </div>
 
 <img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
