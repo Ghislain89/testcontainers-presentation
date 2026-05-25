@@ -12,7 +12,7 @@ Ghislain Gabriëlse
 <img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
 
 <!--
-Welcome everyone! Today I'm going to talk about Testcontainers — a tool that has fundamentally changed how I think about integration testing. By the end of this session, you'll understand what Testcontainers is, why it's better than traditional mocking for integration tests, and how to start using it in your own projects.
+Welcome everyone! Today I'm going to talk about Testcontainers, it helped us improve confidence in our tests tremendously. Assuming I do my job properly, by the end of this session, you'll understand what Testcontainers is, why it's better than traditional mocking for integration tests, and how to start using it in your own projects.
 -->
 
 ---
@@ -35,7 +35,9 @@ Test Automation Consultant <a href="https://detesters.nl/">DeTesters</a>
   - Improving developer experience through tooling
 
 <!--
-A quick intro about myself. I'm Ghislain, a test automation consultant at DeTesters. I've been in the testing space for about 12 years now, and I'm passionate about building tools that make improve the development experience of developers aas well as testers. Testcontainers is one of those tools that I wish I had discovered earlier in my career, could've saved us from a lot of, Oh sh*t moments..
+A quick intro about myself. I'm Ghislain, a test automation consultant at DeTesters. I live in Woerden. I've got two kids, a 4 year old son and 2 year old daughter as well as a British Shorthair cat. With the little free time I have, I try to stay fit on my bicycle as well as play the occasional video game.
+
+I've been in the testing space for about 12 years now, and I'm passionate about building tools that improve the development experience of developers as well as testers. Currently I'm working at BMW where I do Platform Engineering — building tooling to dynamically create test environments, and automating complex program-wide release processes, all focused on improving the developer experience.
 -->
 
 ---
@@ -146,6 +148,9 @@ hideInToc: true
 
 # Why Testcontainers?
 
+<div class="grid grid-cols-[1fr_auto] gap-8 mt-4">
+<div>
+
 | Aspect | Mocking / Stubs | Testcontainers |
 |---|---|---|
 | **Fidelity** | Simulated behavior | Real service behavior |
@@ -154,48 +159,26 @@ hideInToc: true
 | **Confidence** | Medium | High |
 | **Maintenance** | Keep mocks in sync | Self-updating |
 
+</div>
+<div>
+
+### Key Benefits
+
+- 🏝️ **Complete isolation** — fresh containers per run
+- 🔄 **Reproducible everywhere** — laptop & CI
+- ⚡ **Easy to set up** — a few lines of code
+- 📦 **No external infra** — just Docker
+- 🧹 **Auto cleanup** — Ryuk sidecar handles it
+
+</div>
+</div>
+
 > 💡 Testcontainers doesn't replace **all** mocking — it shines for **integration tests**.
 
 <!--
 Let's compare the two approaches side by side. The big wins for Testcontainers are fidelity and confidence — you're testing against the real thing, so you can trust the results. The trade-off is speed: containers take a few seconds to start, whereas mocks are instant. But here's the important nuance — Testcontainers is not meant to replace all your mocks. Unit tests with mocks are still great for fast feedback. Testcontainers is for your integration tests, where you need to know that the pieces actually fit together.
--->
 
----
-layout: default
-hideInToc: true
----
-
-# Key Benefits
-
-<div class="grid grid-cols-2 gap-8 mt-4">
-<div>
-
-### 🎯 Test against real services
-No more behavior drift — your tests run against the same database engine as production.
-
-### 🏝️ Complete isolation
-Every test run gets fresh containers. No shared state, no flaky tests from leftover data.
-
-### 🔄 Reproducible everywhere
-Works the same on your laptop and in CI. No "works on my machine" problems.
-
-</div>
-<div>
-
-### ⚡ Easy to set up
-A few lines of code to spin up a fully configured PostgreSQL, Kafka, or Redis instance.
-
-### 📦 No external infrastructure
-No need to maintain shared test databases or services. Just Docker.
-
-### 🧹 Automatic cleanup
-Containers are automatically stopped and removed when tests finish. The **Ryuk** sidecar ensures nothing leaks.
-
-</div>
-</div>
-
-<!--
-Let me highlight the benefits that matter most in practice. First, you're testing against the real thing — no behavior drift. Second, every test run starts clean. If you've ever dealt with flaky tests because someone else's test left data in a shared database, you know how valuable this is. Third, it works the same everywhere — your laptop, your colleague's laptop, CI. Fourth, setup is trivial — a few lines of code. And finally, cleanup is automatic. There's a sidecar container called Ryuk that tracks everything and cleans up even if your test crashes. You don't have to worry about leaked containers.
+Beyond the comparison, every test run gets fresh containers — no shared state, no flaky tests from leftover data. It works the same everywhere — your laptop, your colleague's laptop, CI. Setup is trivial — a few lines of code. And cleanup is automatic. There's a sidecar container called Ryuk that tracks everything and cleans up even if your test crashes.
 -->
 
 ---
@@ -239,7 +222,7 @@ hideInToc: true
 
 # Example 1 — PostgreSQL Integration Test
 
-```java {all|2-5|7-11|15-18}{maxHeight:'420px'}
+```java {all}{maxHeight:'420px'}
 @Testcontainers
 class UserRepositoryTest {
     @Container
@@ -274,7 +257,7 @@ hideInToc: true
 
 Use **any** Docker image:
 
-```java {all|3-6|8-13}
+```java
 @Testcontainers
 class CustomServiceTest {
     @Container
@@ -297,7 +280,7 @@ class CustomServiceTest {
 ```
 
 <!--
-Now here's where it gets really powerful. Testcontainers isn't limited to databases — you can run any Docker image using GenericContainer. In this example, we're spinning up a WireMock server to simulate an external API. We expose port 8080, and we use a wait strategy to make sure the WireMock admin API is responding before our test starts. Then we use getMappedPort to get the actual port Docker assigned. This pattern is great for testing against services that don't have a dedicated Testcontainers module yet. Basically, if it runs in Docker, you can use it in your tests.
+But Testcontainers isn't limited to databases — you can run any Docker image using GenericContainer. In this example, we're spinning up a WireMock server to simulate an external API. We expose port 8080, and we use a wait strategy to make sure the WireMock admin API is responding before our test starts. Then we use getMappedPort to get the actual port Docker assigned. This pattern is great for testing against services that don't have a dedicated Testcontainers module yet. Basically, if it runs in Docker, you can use it in your tests.
 -->
 
 ---
@@ -345,7 +328,7 @@ The number one objection I hear against Testcontainers is speed. "Real container
 
 Let's start on the left with Spring Boot. When you run a @SpringBootTest, Spring does everything at runtime. It scans the classpath to discover beans, evaluates hundreds of @Conditional annotations for auto-configuration, creates the ApplicationContext, and wires everything together. That's 5 to 15 seconds — and that's BEFORE any Testcontainers even start. So your actual test startup is container time PLUS framework time. In a typical Spring Boot project, you're looking at 15-25 seconds before your first test assertion runs.
 
-Now here's where it gets worse. In Spring Boot, if you use @MockBean on one test class but not another, Spring creates separate ApplicationContexts for each unique configuration. Each new context may trigger new container startups. I've seen Spring Boot test suites where the same PostgreSQL container gets started three or four times because of context pollution. It's death by a thousand cuts.
+And it compounds. In Spring Boot, if you use @MockBean on one test class but not another, Spring creates separate ApplicationContexts for each unique configuration. Each new context may trigger new container startups. I've seen Spring Boot test suites where the same PostgreSQL container gets started three or four times because of context pollution. It's death by a thousand cuts.
 
 Now look at the Quarkus side. Quarkus does bean discovery, injection wiring, and configuration resolution at BUILD time — during mvn compile. So when your test starts, all that's left is instantiation and connecting to containers. The app boots in 1 to 3 seconds. That's not a best case — that's the normal case.
 
@@ -353,7 +336,7 @@ The @InjectMock annotation is also fundamentally different from @MockBean. In Sp
 
 And then there's quarkus:dev — this is the killer feature for developer experience. You run mvn quarkus:dev once, and Quarkus starts your app with containers. As you edit code and save, it detects the changes, hot-reloads only what changed, and re-runs only the affected tests. The containers stay running. Your test feedback loop drops to under 2 seconds. There is nothing equivalent in Spring Boot — Spring DevTools does hot-reload but doesn't re-run tests, and you still pay the full context load time.
 
-Look at the bullet points on the right. Every line is a win for Quarkus when it comes to test speed. This is where Testcontainers goes from "slightly slower than mocks" to "as fast as you'd ever need for day-to-day development."
+Look at the bullet points on the right. Every line is a win for Quarkus when it comes to test speed. That's what takes Testcontainers from "slightly slower than mocks" to "as fast as you'd ever need for day-to-day development."
 -->
 
 ---
@@ -472,7 +455,7 @@ hideInToc: true
 
 In Quarkus, **Dev Services** automatically starts containers — no manual setup needed:
 
-```properties {all|1-2|4-5|7-8}
+```properties
 # Just declare the DB kind — Quarkus starts PostgreSQL automatically
 quarkus.datasource.db-kind=postgresql
 
@@ -497,7 +480,7 @@ mp.messaging.outgoing.fruit-events-out.connector=smallrye-kafka
 </div>
 
 <!--
-Now here's where Quarkus makes Testcontainers even more powerful. With Quarkus Dev Services, you don't need to declare containers at all. You just say "I need PostgreSQL" in your config, and Quarkus automatically spins up a PostgreSQL container using Testcontainers. Same for Kafka — just add the Kafka connector dependency, and Quarkus starts a Redpanda container for you. No JDBC URLs, no port mapping, no container lifecycle code. It's Testcontainers with zero boilerplate.
+Quarkus takes this a step further with Dev Services. You don't need to declare containers at all. You just say "I need PostgreSQL" in your config, and Quarkus automatically spins up a PostgreSQL container using Testcontainers. Same for Kafka — just add the Kafka connector dependency, and Quarkus starts a Redpanda container for you. No JDBC URLs, no port mapping, no container lifecycle code. It's Testcontainers with zero boilerplate.
 -->
 
 ---
@@ -528,14 +511,14 @@ hideInToc: true
 
 - Kafka → real (Redpanda)
 - Database → real (PostgreSQL)
-- REST client → not tested
+- REST client → 💡 GenericContainer + WireMock
 - 🎯 Full stack validation
 
 </div>
 </div>
 
 <!--
-In our demo app, we test at two distinct levels. Unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any mocks. Each level catches different types of bugs, and the combination gives you high confidence with fast feedback.
+In our demo app, we test at two distinct levels. Unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any mocks. And for the REST client, remember the GenericContainer example we saw earlier? You could spin up a WireMock container the same way, stub the nutrition API responses, and test that integration path too. Each level catches different types of bugs, and the combination gives you high confidence with fast feedback.
 -->
 
 ---
@@ -545,7 +528,7 @@ hideInToc: true
 
 # Level 1 — Unit Test with `@InjectMock`
 
-```java {all|1-5|7-10|12-23|25-26}{maxHeight:'420px'}
+```java {all}{maxHeight:'420px'}
 @QuarkusTest
 class FruitResourceUnitTest {
     @InjectMock
@@ -593,8 +576,8 @@ hideInToc: true
 
 # Level 2 — Integration Test (Real Containers)
 
-```java {all|1-3|5-14|16-25}{maxHeight:'420px'}
-@QuarkusTest  // Dev Services auto-starts PostgreSQL + Kafka
+```java {all}{maxHeight:'420px'} PostgreSQL + Kafka
+@QuarkusTest
 class FruitResourceTest {
 
     @Test
@@ -654,9 +637,8 @@ hideInToc: true
 
 - ⚡ Mock what you isolate, real DB is free
 - 🎯 Zero config via Dev Services
-- 🏗️ Real containers = real confidence
-- 🧹 All cleanup is automatic (Ryuk)
-- 🔄 Reproducible on any machine with Docker
+- 🏗️ Two test levels from one `@QuarkusTest` setup
+- 🔄 26s for 10 tests — fast enough for CI & local dev
 
 </div>
 </div>
@@ -669,6 +651,8 @@ hideInToc: true
 
 <!--
 Let me show you the final results. We have 10 tests across 2 test classes covering 2 levels. The unit tests mock Kafka and the REST client but use a real database. The integration tests use only real containers — no mocks at all. All 10 tests pass in about 26 seconds. Everything is reproducible — any developer with Docker can run these on any machine.
+
+As an example, the platform tools service I work on the most has a little under 800 tests and runs just shy of three minutes.
 -->
 
 ---
@@ -716,8 +700,6 @@ hideInToc: true
 
 **Prerequisites:** Docker + JUnit 5. That's it! 🎉
 
-📚 [testcontainers.com](https://testcontainers.com) | 💻 [github.com/testcontainers](https://github.com/testcontainers)
-
 </div>
 </div>
 
@@ -760,15 +742,11 @@ Questions? 🙋
 
 </div>
 <div class="flex flex-col items-center">
-
-<img src="/qr-code.svg" class="w-40 h-40" />
-<span class="text-xs mt-2 text-gray-400">Scan for slides & Demo Code</span>
-
 </div>
 </div>
 
 <img src="/logo-white-detesters-only.svg" class="absolute bottom-8 right-8 w-36 opacity-80" />
 
 <!--
-That wraps up the presentation! To summarize: Testcontainers lets you test against real services in Docker, giving you much higher confidence than mocks for integration tests. It's easy to set up, fully isolated, reproducible, and cleans up after itself. I'd encourage you to try it on your next project — start with one integration test against a real database and see how it feels. Happy to take any questions!
+That wraps up the presentation! To summarize: Testcontainers lets you test against real services in Docker, giving you much higher confidence than mocks for integration tests. It's easy to set up, fully isolated, reproducible, and cleans up after itself. I'd encourage you to try it on your next project — start with one integration test against a real database and see how it feels. Happy to take any questions! And if you're interested, I have two upcoming sessions: on June 16th I'll be talking about AI Native — Agents, Skills and Real-World Impact at TechHouse Rabobank, and on June 17th I'll be at DeTesters talking about Testing AI Agents and Skills.
 -->
