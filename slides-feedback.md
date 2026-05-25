@@ -1,0 +1,3 @@
+- Binnen de bank zijn we heel erg bezig met besparen van kosten\
+- Down & Upscalen van environments benoemen
+- Plaatje OTAP Straat en hoe we daar kosten besparen

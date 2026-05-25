@@ -29,9 +29,13 @@ Test Automation Consultant <a href="https://detesters.nl/">DeTesters</a>
 - Butler to a cat
 - ~12 years of experience
 - Builds Tools that simplify complex tasks
+- @ BMW: Platform Engineering
+  - Dynamic test environment provisioning
+  - Automating program-wide release processes
+  - Improving developer experience through tooling
 
 <!--
-A quick intro about myself. I'm Ghislain, a test automation consultant at DeTesters. I've been in the testing space for about 12 years now, and I'm passionate about building tools that make testing easier and more reliable. Testcontainers is one of those tools that I wish I had discovered earlier in my career.
+A quick intro about myself. I'm Ghislain, a test automation consultant at DeTesters. I've been in the testing space for about 12 years now, and I'm passionate about building tools that make improve the development experience of developers aas well as testers. Testcontainers is one of those tools that I wish I had discovered earlier in my career, could've saved us from a lot of, Oh sh*t moments..
 -->
 
 ---
@@ -742,7 +746,15 @@ Questions? 🙋
 📚 [testcontainers.com](https://testcontainers.com) — Official documentation  
 💻 [github.com/testcontainers](https://github.com/testcontainers) — Source code & examples  
 🐘 [testcontainers.com/modules](https://testcontainers.com/modules/) — Browse all available modules  
-🎤 [github.com/Ghislain89/testcontainers-presentation](https://github.com/Ghislain89/testcontainers-presentation) — This presentation
+🎤 [github.com/Ghislain89/testcontainers-presentation](https://github.com/Ghislain89/testcontainers-presentation) — This presentation and demo app
+
+</div>
+
+<div class="mt-4 text-sm border-t border-gray-600 pt-4">
+
+🗓️ **Upcoming sessions:**  
+📅 June 16th — *AI Native: Agents, Skills & Real-World Impact* @ TechHouse Rabobank  
+📅 June 17th — *Testing AI Agents & Skills* @ DeTesters
 
 </div>
 
