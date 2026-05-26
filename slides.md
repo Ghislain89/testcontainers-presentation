@@ -135,10 +135,12 @@ when(repo.save(any()))
 </div>
 </div>
 
-> "Your mocks are only as good as your assumptions about the real system."
+> "Your mocks are only as good as your assumptions and knowledge about the real system."
 
 <!--
 Most of us mock, stub, use H2 instead of real PostgreSQL, or share a test database. These approaches work to a degree, but they come with real trade-offs. Mocks don't evolve with the real service. H2 has subtle SQL differences compared to PostgreSQL. Look at this code example: the mock happily returns a saved entity, but in production, a UNIQUE constraint violation would blow up. Your mocks are only as good as your assumptions — and assumptions age badly.
+
+For example, I had a team that added liquibase migrations to their service, it ran fine locally and in CI but failed on ACC (and would've failed on PROD) because they used syntax that was only available in postgres 16 and we still had a few postgres 15 database servers. Admittedly, this was actually understandable. The Postgres servers are azure managed to fairly 'hidden' for these teams. They just did not know.
 -->
 
 ---
@@ -444,6 +446,8 @@ flowchart LR
 
 <!--
 Let's move from theory to practice. I've built a demo application — a simple Fruit CRUD API in Quarkus — that demonstrates two different levels of testing with Testcontainers. The app has three external dependencies: PostgreSQL for persistence, Kafka for domain events, and a REST client calling an external nutrition API. This gives us a realistic service to test at different levels.
+
+This is, although simplified heavily, what most services within BMW would look like.
 -->
 
 ---
@@ -518,7 +522,7 @@ hideInToc: true
 </div>
 
 <!--
-In our demo app, we test at two distinct levels. Unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database — because Dev Services makes it free. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any mocks. And for the REST client, remember the GenericContainer example we saw earlier? You could spin up a WireMock container the same way, stub the nutrition API responses, and test that integration path too. Each level catches different types of bugs, and the combination gives you high confidence with fast feedback.
+In our demo app, we test at two distinct levels. Unit tests mock out Kafka and the REST client using Quarkus' @InjectMock, but still use a real database thanks to Dev Services. Integration tests use real containers for everything: real PostgreSQL, real Kafka — testing the full stack without any mocks. And for the REST client, remember the GenericContainer example we saw earlier? You could spin up a WireMock container the same way, stub the nutrition API responses, and test that integration path too. Each level catches different types of bugs, and the combination gives you high confidence with fast feedback.
 -->
 
 ---
@@ -566,7 +570,7 @@ class FruitResourceUnitTest {
 ```
 
 <!--
-Let's start with unit tests. Notice that even though this is a "unit" test, we still have a real PostgreSQL database running — Dev Services starts it for free. We only mock the things we want to isolate: the Kafka producer and the external REST client. The @InjectMock annotation replaces the CDI bean with a Mockito mock. This lets us test the controller logic — routing, serialization, event firing — without needing real Kafka or a real external API. Fast feedback on business logic, with real database behavior.
+Let's start with unit tests. Notice that even though this is a "unit" test, we still have a real PostgreSQL database running — Dev Services starts it automatically. We only mock the things we want to isolate: the Kafka producer and the external REST client. The @InjectMock annotation replaces the CDI bean with a Mockito mock. This lets us test the controller logic — routing, serialization, event firing — without needing real Kafka or a real external API. Fast feedback on business logic, with real database behavior.
 -->
 
 ---
